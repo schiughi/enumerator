@@ -4,7 +4,7 @@ class Enum {
   }
 
   equals(other) {
-    return this.key === other.key
+    return this === other
   }
 
   any(...enums) {
@@ -27,7 +27,7 @@ function enumerate(obj) {
     return Object.values(enums).filter(e => typeof e !== 'function')
   }
 
-  const from = (key) => enums.values().find(e => e.key === key)
+  const from = key => enums.values().find(e => e.key === key)
 
   enums['values'] = values
   enums['from'] = from
