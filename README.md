@@ -17,9 +17,11 @@ convert from value
 
 const myStatus = STATUS.from('DOING')
 
-myStatus.equals(STATUS.doing)
+myStatus.isDoing
 // -> true
 
-myStatus.any(STATUS.ready, STATUS.done)
+myStatus.isDone
 // -> false
+
+myStatus.any(STATUS.READY, STATUS.DOING)
 ```

@@ -4,7 +4,9 @@ class Enum {
   }
 
   equals(other) {
-    return this === other
+    if (other instanceof Enum) {
+      return this.key === other.key
+    }
   }
 
   any(...enums) {
@@ -12,25 +14,49 @@ class Enum {
   }
 
   get value() {
-    return this.key.toUpperCase()
+    return this.key
   }
+}
+
+function validate(target, name) {
+  // expect "isXXXX"
+  const key = name.toUpperCase().slice(2);
+  const comparerable = target._findByKey(key)
+  return target.equals(comparerable)
+}
+
+
+function build(key) {
+  const instance = new Enum(key)
+
+  return new Proxy(instance, {
+    get: (target, name) => {
+      if (Reflect.has(target, name)) {
+        return Reflect.get(target, name)
+      }
+      return validate(target, name)
+    }
+  })
 }
 
 function enumerate(obj) {
   const enums = {}
 
-  Object.keys(status).forEach((key) => {
-    enums[key] = new Enum(status[key])
+  Object.keys(obj).forEach((key) => {
+    enums[key.toUpperCase()] = build(obj[key])
   })
 
-  const values = () => {
+  enums['values'] = () => {
     return Object.values(enums).filter(e => typeof e !== 'function')
   }
 
-  const from = key => enums.values().find(e => e.key === key)
+  enums['from'] = key => enums.values().find(e => e.key === key) || build(key)
 
-  enums['values'] = values
-  enums['from'] = from
+  const findByKey = key => enums[key]
+
+  enums.values().forEach((e) => {
+    e._findByKey = findByKey
+  })
 
   return enums
 }
