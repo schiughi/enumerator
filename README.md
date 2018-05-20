@@ -24,4 +24,5 @@ myStatus.isDone
 // -> false
 
 myStatus.any(STATUS.READY, STATUS.DOING)
+// -> true
 ```
