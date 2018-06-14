@@ -1,62 +1,61 @@
 class Enum {
-  constructor(key) {
-    this.key = key
+  constructor(value) {
+    this.value = value
+    this.key = Symbol(value)
   }
 
   equals(other) {
     if (other instanceof Enum) {
       return this.key === other.key
     }
+    return false
   }
 
   any(...enums) {
-    enums.some(e => this.equals(e))
+    return enums.some(e => this.equals(e))
   }
 
-  get value() {
-    return this.key
+  except(...enums) {
+    return enums.every(e => !this.equals(e))
   }
 }
 
-function validate(target, name) {
-  // expect "isXXXX"
-  const key = name.toUpperCase().slice(2);
-  const comparerable = target._findByKey(key)
-  return target.equals(comparerable)
-}
+class Enumerable {
+  constructor(object) {
+    Object.keys(object).forEach((key) => {
+      this[key.toUpperCase()] = this._build(object[key])
+    })
+    this.values().forEach(e => e.parent = this)
+  }
 
+  values() {
+    return Object.values(this).filter(e => typeof e !== 'function')
+  }
 
-function build(key) {
-  const instance = new Enum(key)
+  valueOf(value) {
+    return this.values().find(e => e.value === value) || this._build(value)
+  }
 
-  return new Proxy(instance, {
-    get: (target, name) => {
-      if (Reflect.has(target, name)) {
-        return Reflect.get(target, name)
-      }
-      return validate(target, name)
+  _build(value) {
+    const validate = (target, name) => {
+      const variable = name.toUpperCase().slice(2);
+      const comparable = target.parent[variable]
+      return target.equals(comparable)
     }
-  })
+
+    const instance = new Enum(value)
+
+    return new Proxy(instance, {
+      get: (target, name) => {
+        if (Reflect.has(target, name)) {
+          return Reflect.get(target, name)
+        }
+        return validate(target, name)
+      }
+    })
+  }
 }
 
 function enumerate(obj) {
-  const enums = {}
-
-  Object.keys(obj).forEach((key) => {
-    enums[key.toUpperCase()] = build(obj[key])
-  })
-
-  enums['values'] = () => {
-    return Object.values(enums).filter(e => typeof e !== 'function')
-  }
-
-  enums['from'] = key => enums.values().find(e => e.key === key) || build(key)
-
-  const findByKey = key => enums[key]
-
-  enums.values().forEach((e) => {
-    e._findByKey = findByKey
-  })
-
-  return enums
+  return new Enumerable(obj)
 }
