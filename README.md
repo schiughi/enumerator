@@ -15,7 +15,7 @@ convert from value
 
 ```javascript
 
-const myStatus = STATUS.from('DOING')
+const myStatus = STATUS.valueOf('DOING')
 
 myStatus.isDoing
 // -> true
@@ -25,4 +25,7 @@ myStatus.isDone
 
 myStatus.any(STATUS.READY, STATUS.DOING)
 // -> true
+
+myStatus.except(STATUS.DOING, STATUS.DONE)
+// -> false
 ```

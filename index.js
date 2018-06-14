@@ -25,7 +25,6 @@ class Enumerable {
     Object.keys(object).forEach((key) => {
       this[key.toUpperCase()] = this._build(object[key])
     })
-    this.values().forEach(e => e.parent = this)
   }
 
   values() {
@@ -39,7 +38,7 @@ class Enumerable {
   _build(value) {
     const validate = (target, name) => {
       const variable = name.toUpperCase().slice(2);
-      const comparable = target.parent[variable]
+      const comparable = this[variable]
       return target.equals(comparable)
     }
 
@@ -56,6 +55,6 @@ class Enumerable {
   }
 }
 
-function enumerate(obj) {
+export default function enumerate(obj) {
   return new Enumerable(obj)
 }
